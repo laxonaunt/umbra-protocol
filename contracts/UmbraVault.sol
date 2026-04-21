@@ -259,6 +259,10 @@ contract UmbraVault is Ownable, ReentrancyGuard {
         );
     }
 
-    receive()  external payable {}
-    fallback() external payable {}
+   receive() external payable {}
+
+/// @dev Reject direct ETH sends that don't go through depositCollateral
+fallback() external payable {
+    revert("Use depositCollateral()");
+}
 }
