@@ -66,9 +66,9 @@ Liquidation: MEV race   →      Sealed-bid TEE auction
 
 | Contract | Address |
 |---|---|
-| UmbraOracle | [`0xF78DcADf3dA21A290d2488e72bce033aFEE48765`](https://sepolia.arbiscan.io/address/0xF78DcADf3dA21A290d2488e72bce033aFEE48765) |
-| UmbraVault | [`0xC135Ce19dB893A4a156Cdd31b62F78036b9c9F52`](https://sepolia.arbiscan.io/address/0xC135Ce19dB893A4a156Cdd31b62F78036b9c9F52) |
-| UmbraLiquidator | [`0x49E418477fb26Ee1bbE6708948e23339759EF7bd`](https://sepolia.arbiscan.io/address/0x49E418477fb26Ee1bbE6708948e23339759EF7bd) |
+| UmbraOracle | [`0xc8f330Ff10993C6d0C1c91B689BCeed59Fd35f98`](https://sepolia.arbiscan.io/address/0xc8f330Ff10993C6d0C1c91B689BCeed59Fd35f98) |
+| UmbraVault | [`0x043aC35Fa53c6E09bF5DAB07b85B39B258d8CaE5`](https://sepolia.arbiscan.io/address/0x043aC35Fa53c6E09bF5DAB07b85B39B258d8CaE5) |
+| UmbraLiquidator | [`0x29ef4dC124A514eF5D42bd17dBB39a3EeA66678c`](https://sepolia.arbiscan.io/address/0x29ef4dC124A514eF5D42bd17dBB39a3EeA66678c) |
 
 ---
 
