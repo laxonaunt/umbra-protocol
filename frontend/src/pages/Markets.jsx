@@ -158,6 +158,8 @@ export default function Markets() {
                 { name: 'UMBRA_ORACLE',     addr: ADDRESSES.oracle     },
                 { name: 'UMBRA_VAULT',      addr: ADDRESSES.vault      },
                 { name: 'UMBRA_LIQUIDATOR', addr: ADDRESSES.liquidator },
+                 { name: 'UMBRA_DEBTTOKEN', addr: ADDRESSES.debtToken },
+      
               ].map(({ name, addr }) => (
                 <TerminalRow
                   key={addr}
