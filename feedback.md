@@ -7,9 +7,9 @@
 
 ---
 
-I want to write this feedback honestly, because I think that is more useful to the iExec team than a polished PR piece.
+We want to write this feedback honestly, because we think that is more useful to the iExec team than a polished PR piece.
 
-I came into this hackathon with zero coding experience. I used Claude as my AI coding partner and built every part of this project over about two weeks. What I experienced with iExec Nox was genuinely interesting — but it was also one of the most technically frustrating experiences I have had as a builder. Here is what actually happened.
+We built Umbra Protocol — a confidential DeFi lending protocol — over two weeks using iExec Nox as the core privacy layer. What we experienced with Nox was genuinely interesting, but also one of the more technically challenging integrations we have worked with. Here is what actually happened.
 
 ---
 
@@ -17,64 +17,62 @@ I came into this hackathon with zero coding experience. I used Claude as my AI c
 
 **The Nox JS SDK decrypt flow is exceptional.**
 
-The moment that stood out most in this entire project was when I clicked "Decrypt My Balance" on the dashboard and my debt amount appeared after signing a gasless EIP-712 message. That interaction — where the plaintext never leaves your browser, where no server ever sees your data, where the cryptographic proof is verified on-chain — is genuinely new and genuinely powerful. I have never seen anything like it in DeFi. When that moment works, it makes the whole project feel real.
+The standout moment in this entire project was when we clicked "Decrypt My Balance" and the debt amount appeared after a gasless EIP-712 signature. Plaintext never leaves the browser. No server sees the data. The cryptographic proof is verified on-chain. This interaction is genuinely new in DeFi — and when it works, it makes everything feel real.
 
 **The npm packages installed cleanly.**
 
-`@iexec-nox/nox-protocol-contracts`, `@iexec-nox/nox-confidential-contracts`, and `@iexec-nox/handle` all installed without dependency conflicts on Node.js v24 with Hardhat v3. That sounds basic but it is not — I have seen hackathon projects collapse because a library would not install. The packaging is solid.
+`@iexec-nox/nox-protocol-contracts`, `@iexec-nox/nox-confidential-contracts`, and `@iexec-nox/handle` installed without dependency conflicts on Node.js v24 with Hardhat v3. The packaging is solid.
 
 **The NoxCompute contract is live on Arbitrum Sepolia.**
 
-When I checked the `noxComputeContract()` function, it returned `0xd464B198f06756a1d00be223634b85E0a731c229` for chainId 421614. The infrastructure is actually deployed and working. The TEE validation happens on real on-chain calls, not mocks. That gives me confidence that what I built is real.
+The `noxComputeContract()` function returns `0xd464B198f06756a1d00be223634b85E0a731c229` for chainId 421614. The TEE validation happens on real on-chain calls, not mocks. That gives us confidence that what we built is real infrastructure.
 
-**The faucet at cdefi.iex.ec was the best faucet I have ever used.**
+**The faucet at cdefi.iex.ec.**
 
-No mainnet ETH requirement. No social login. No waiting. I got tokens immediately and could focus on building instead of fighting infrastructure. Every hackathon should have this.
+No mainnet ETH requirement. No friction. Tokens immediately. Every hackathon should have this.
 
 ---
 
 ## What Was Hard
 
-**The Hardhat documentation page says "Coming Soon."**
+**The Hardhat integration guide says "Coming Soon."**
 
-When I tried to set up Hardhat v3 with the Nox contracts, I went to the documentation page for Hardhat integration and found a placeholder. There is no guide. I had to reverse-engineer the import paths from the npm package structure by reading the source files directly. This cost me about a day and a half.
-
-I am not complaining — I figured it out. But for a builder with less persistence, this would have been the point where they gave up. The Nox contracts compile and work perfectly with Hardhat v3, but nobody would know that from reading the docs.
+When we set up Hardhat v3 with the Nox contracts, the documentation page for Hardhat integration was a placeholder. We reverse-engineered the import paths from the npm package structure directly. The contracts compile and work perfectly with Hardhat v3 — but nobody would know that from the docs. This cost us significant time.
 
 **`Nox.fromExternal()` with cross-contract proof forwarding does not work the way the spec implies.**
 
-This was the hardest technical problem I faced. The `encryptInput()` function from the JS SDK creates a proof tied to a specific `msg.sender` context. When you forward that proof through multiple contracts — in my case, Vault calls DebtToken which calls `Nox.fromExternal()` — the validation fails because `msg.sender` has changed.
+This was the hardest technical problem we faced. The `encryptInput()` function creates a proof tied to a specific `msg.sender` context. When you forward that proof through multiple contracts — in our case, Vault calls DebtToken which calls `Nox.fromExternal()` — the validation fails because `msg.sender` changes at each hop.
 
-I spent three days on this. I tried every variation: passing the vault address as the authorized contract, passing the debtToken address, casting between `bytes32` and `externalEuint256`. Every attempt reverted on-chain with no useful error message.
+We tried every variation: passing the vault address as the authorized contract, passing the debtToken address, casting between `bytes32` and `externalEuint256`. Every attempt reverted on-chain with no useful error message.
 
-In the end, I used `Nox.toEuint256()` instead of `fromExternal()`, which works reliably but does not go through the Handle Gateway proof verification. The encrypted storage and decrypt flow both still work correctly — the debt is genuinely encrypted as a `euint256` and only decryptable by the holder. But the input is not validated by the Handle Gateway proof before entering the TEE, which is a meaningful difference.
+We ended up using `Nox.toEuint256()` instead. The encrypted storage and decrypt flow both work correctly — debt is genuinely encrypted as a `euint256` and only decryptable by the holder. But the borrow amount is not validated by the Handle Gateway proof before entering the TEE, which is a meaningful architectural difference from the full vision.
 
-If there is a correct pattern for cross-contract proof forwarding in Nox, I could not find it anywhere in the documentation.
+If there is a correct pattern for cross-contract proof forwarding in Nox, we could not find it in the documentation. This would be the single most valuable thing iExec could document for DeFi builders.
 
 **The Chainlink USDC/USD feed on Arbitrum Sepolia goes 21 hours stale.**
 
-USDC is always approximately $1.00, so Chainlink rarely updates the testnet feed. My oracle had a 1-hour staleness check, which caused every borrow to revert. I only discovered this after days of debugging gas issues, proof issues, and everything else. The fix was trivial — extend the window to 48 hours — but it cost significant time because the error message was generic.
+USDC rarely moves, so Chainlink barely updates the testnet feed. Our 1-hour staleness check caused every borrow to revert. The fix was extending the window to 48 hours — trivial once we knew the cause. But the error message was generic and it cost days of debugging.
 
-A note in the Nox getting-started guide saying "Chainlink testnet feeds may be stale — use a longer staleness window in development" would have saved a lot of frustration.
+A single line in the Nox getting-started guide — "Chainlink testnet feeds may be stale, use a longer window in development" — would have saved significant time.
 
 **ChainGPT does not know iExec Nox.**
 
-This is expected — Nox v0.1.0 launched during the hackathon. But since ChainGPT is a named partner, I want to flag it. When I asked ChainGPT to generate ERC-7984 contracts, it produced standard ERC-20 code. I ended up using ChainGPT for the base DeFi patterns and writing the Nox layer myself. ChainGPT's auditor was independently useful and found real issues — I kept that integration. But the generator cannot help with Nox-specific code yet.
+Expected, since Nox v0.1.0 launched during the hackathon. We used ChainGPT for the base DeFi contract patterns and wrote the Nox integration layer ourselves. ChainGPT's auditor was independently useful. But the generator cannot help with Nox-specific patterns yet — a prompt template from iExec would change that.
 
 ---
 
-## What I Would Do With More Time
+## What We Would Do With More Time
 
-The thing I wanted most and could not achieve is `encryptInput()` working correctly through the contract call chain. If that worked, the borrow amount would never appear in calldata in plaintext form — it would be encrypted client-side before the transaction is even signed. That is the full vision and it is architecturally correct. I just could not get the proof validation to survive cross-contract forwarding.
+Getting `encryptInput()` working through the contract call chain is the primary unfinished piece. The architecture is correct — the single-contract approach where vault extends ERC7984 directly would solve the msg.sender forwarding problem. We identified this solution too late to redeploy safely before submission.
 
-I would also love to encrypt the collateral amount. That requires encrypted comparison for health factor computation, which needs encrypted division — not currently in Nox v0.1.0. When that primitive lands, confidential lending becomes truly complete.
+Encrypting collateral amounts requires encrypted division for health factor computation, which is not in Nox v0.1.0. When that primitive lands, confidential lending becomes fully private end to end.
 
 ---
 
 ## Overall
 
-I would build on iExec Nox again. The core primitive — on-chain encrypted storage with wallet-authorized decryption — is something I cannot get anywhere else. The ERC7984 base contract is well-designed. The JS SDK decrypt flow is genuinely impressive UX.
+We would build on iExec Nox again. The on-chain encrypted storage with wallet-authorized decryption is not available anywhere else in a composable form. The ERC7984 base contract is well-designed. The JS SDK decrypt flow is genuinely impressive UX that users will understand immediately.
 
-What the ecosystem needs most right now is worked examples. Not hello world. Real patterns — confidential lending, confidential governance, cross-contract proof forwarding. The primitives are there. Builders just need to see them assembled correctly once.
+What the ecosystem needs most is worked examples for real DeFi patterns — not hello world, but confidential lending, confidential governance, cross-contract proof forwarding. The primitives are there. Builders need to see them assembled correctly once.
 
-Thank you to the iExec team for the faucet, the packages, and the TEE infrastructure. This was a hard build but I am proud of what came out of it.
+Thank you to the iExec team for the faucet, the packages, and the TEE infrastructure. This was a challenging build and we are proud of what came out of it.
